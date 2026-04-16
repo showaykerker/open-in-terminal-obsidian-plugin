@@ -19,6 +19,7 @@ export interface OpenInTerminalSettings {
   enableGitCommitPush: boolean;
   enableGitPull: boolean;
   defaultCommitMessage: string;
+  openAtNoteFolderEnabled: boolean;
 }
 
 export const defaultTerminalApp = (): string => {
@@ -72,7 +73,8 @@ export const DEFAULT_SETTINGS: OpenInTerminalSettings = {
   enableWslOnWindows: false,
   enableGitCommitPush: false,
   enableGitPull: false,
-  defaultCommitMessage: 'update'
+  defaultCommitMessage: 'update',
+  openAtNoteFolderEnabled: false
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -133,7 +135,11 @@ export const normalizeSettings = (stored: unknown): OpenInTerminalSettings => {
     defaultCommitMessage:
       typeof source.defaultCommitMessage === 'string'
         ? source.defaultCommitMessage
-        : DEFAULT_SETTINGS.defaultCommitMessage
+        : DEFAULT_SETTINGS.defaultCommitMessage,
+    openAtNoteFolderEnabled: readBoolean(
+      source.openAtNoteFolderEnabled,
+      DEFAULT_SETTINGS.openAtNoteFolderEnabled
+    )
   };
 };
 

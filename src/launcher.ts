@@ -8,6 +8,7 @@ import { logger } from './logger';
 
 export type LaunchCommand = {
   command: string;
+  cwd?: string;
   cleanup?: () => void;
 };
 
@@ -213,7 +214,7 @@ const buildWindowsLaunch = (
   return { command };
 };
 
-const buildUnixLaunch = (terminalApp: string, toolCommand?: string): LaunchCommand | null => {
+const buildUnixLaunch = (terminalApp: string, vaultPath: string, toolCommand?: string): LaunchCommand | null => {
   const app = sanitizeTerminalApp(terminalApp);
   if (!app) {
     return null;
@@ -221,27 +222,27 @@ const buildUnixLaunch = (terminalApp: string, toolCommand?: string): LaunchComma
 
   if (!toolCommand) {
     const command = `${app}`;
-    logger.log('Unix launch (simple)', { command });
-    return { command };
+    logger.log('Unix launch (simple)', { command, vaultPath });
+    return { command, cwd: vaultPath };
   }
 
   const shellCommand = `cd "$PWD"; ${toolCommand}; exec "$SHELL"`;
 
   if (app.includes('gnome-terminal')) {
     const command = `${app} -- bash -lc "${shellCommand}"`;
-    logger.log('Unix launch (gnome-terminal)', { command, toolCommand });
-    return { command };
+    logger.log('Unix launch (gnome-terminal)', { command, toolCommand, vaultPath });
+    return { command, cwd: vaultPath };
   }
 
   if (app.includes('konsole')) {
     const command = `${app} -e bash -lc "${shellCommand}"`;
-    logger.log('Unix launch (konsole)', { command, toolCommand });
-    return { command };
+    logger.log('Unix launch (konsole)', { command, toolCommand, vaultPath });
+    return { command, cwd: vaultPath };
   }
 
   const command = `${app} -e bash -lc "${shellCommand}"`;
-  logger.log('Unix launch (generic tool)', { command, toolCommand });
-  return { command };
+  logger.log('Unix launch (generic tool)', { command, toolCommand, vaultPath });
+  return { command, cwd: vaultPath };
 };
 
 export const buildLaunchCommand = (
@@ -259,5 +260,5 @@ export const buildLaunchCommand = (
   if (Platform.isWin) {
     return buildWindowsLaunch(terminalApp, vaultPath, toolCommand, options?.useWslOnWindows);
   }
-  return buildUnixLaunch(terminalApp, toolCommand);
+  return buildUnixLaunch(terminalApp, vaultPath, toolCommand);
 };

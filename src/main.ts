@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { join } from 'path';
 
 import { FileSystemAdapter, Notice, Platform, Plugin } from 'obsidian';
 
@@ -72,8 +73,17 @@ export default class OpenInTerminalPlugin extends Plugin {
       return null;
     }
     const vaultPath = adapter.getBasePath();
+
+    let workingPath = vaultPath;
+    if (this.settings.openAtNoteFolderEnabled) {
+      const activeFile = this.app.workspace.getActiveFile();
+      if (activeFile && activeFile.parent) {
+        workingPath = join(vaultPath, activeFile.parent.path);
+      }
+    }
+
     const terminalApp = getCurrentTerminalApp(this.settings.terminalApp);
-    const launchCommand = buildLaunchCommand(terminalApp, vaultPath, toolCommand, {
+    const launchCommand = buildLaunchCommand(terminalApp, workingPath, toolCommand, {
       useWslOnWindows: this.settings.enableWslOnWindows
     });
     logger.log('Compose launch command', {
@@ -81,6 +91,7 @@ export default class OpenInTerminalPlugin extends Plugin {
       terminalApp,
       toolCommand,
       vaultPath,
+      workingPath,
       launchCommand
     });
     return launchCommand;
@@ -109,7 +120,7 @@ export default class OpenInTerminalPlugin extends Plugin {
     try {
       logger.log('Spawning command', { label, command: launchCommand.command, vaultPath });
       const child = spawn(launchCommand.command, {
-        cwd: vaultPath,
+        cwd: launchCommand.cwd ?? vaultPath,
         shell: true,
         detached: true,
         stdio: 'ignore'

@@ -45,6 +45,20 @@ export class OpenInTerminalSettingTab extends PluginSettingTab {
           })
       );
 
+    new Setting(containerEl)
+      .setName('Open at current note\'s folder')
+      .setDesc(
+        'When enabled, the terminal opens at the folder of the currently active note instead of the vault root. Falls back to vault root if no note is open.'
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.openAtNoteFolderEnabled)
+          .onChange(async (value) => {
+            this.plugin.settings.openAtNoteFolderEnabled = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
     if (Platform.isWin) {
       new Setting(containerEl)
         .setName('Use WSL for commands')
