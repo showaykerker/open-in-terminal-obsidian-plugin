@@ -67,7 +67,7 @@ export default class OpenInTerminalPlugin extends Plugin {
     }
   }
 
-  private composeLaunchCommand(toolCommand?: string): LaunchCommand | null {
+  private composeLaunchCommand(toolCommand?: string, useVaultRoot = false): LaunchCommand | null {
     const adapter = this.app.vault.adapter;
     if (!(adapter instanceof FileSystemAdapter)) {
       return null;
@@ -75,7 +75,7 @@ export default class OpenInTerminalPlugin extends Plugin {
     const vaultPath = adapter.getBasePath();
 
     let workingPath = vaultPath;
-    if (this.settings.openAtNoteFolderEnabled) {
+    if (!useVaultRoot && this.settings.openAtNoteFolderEnabled) {
       const activeFile = this.app.workspace.getActiveFile();
       if (activeFile && activeFile.parent) {
         workingPath = join(vaultPath, activeFile.parent.path);
@@ -165,7 +165,7 @@ export default class OpenInTerminalPlugin extends Plugin {
     }
 
     const gitCommand = this.buildGitCommitPushCommand();
-    this.runLaunchCommand(() => this.composeLaunchCommand(gitCommand), 'Git: commit and push');
+    this.runLaunchCommand(() => this.composeLaunchCommand(gitCommand, true), 'Git: commit and push');
   }
 
   private async runGitPull() {
@@ -175,7 +175,7 @@ export default class OpenInTerminalPlugin extends Plugin {
       return;
     }
 
-    this.runLaunchCommand(() => this.composeLaunchCommand('git pull'), 'Git: pull');
+    this.runLaunchCommand(() => this.composeLaunchCommand('git pull', true), 'Git: pull');
   }
 
   private async checkGitRepo(): Promise<boolean> {
