@@ -1,8 +1,8 @@
 {
   "name": "obsidian-open-in-terminal",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Open your vault in a new terminal window, launch CLI tools, or run quick Git commands from Obsidian.",
-  "author": "ChenFeng",
+  "author": "showaykerker",
   "scripts": {
     "dev": "rollup --config rollup.config.js --watch",
     "build": "rollup --config rollup.config.js",
