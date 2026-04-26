@@ -6,6 +6,11 @@ on:
       - '*'
       - '*.*.*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build and attach assets to (e.g. 0.10.0)'
+        required: true
+        default: '0.10.0'
 
 permissions:
   contents: write
@@ -17,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,13 +46,19 @@ jobs:
           cd release
           zip -r ../open-in-terminal.zip .
           cd ..
-          FILES="manifest.json\nmain.js\nopen-in-terminal.zip"
-          if [ -f styles.css ]; then FILES="$FILES\nstyles.css"; fi
-          echo -e "files<<EOF\n$FILES\nEOF" >> "$GITHUB_OUTPUT"
+          {
+            echo 'files<<EOF'
+            echo 'manifest.json'
+            echo 'main.js'
+            echo 'open-in-terminal.zip'
+            if [ -f styles.css ]; then echo 'styles.css'; fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           files: ${{ steps.prep.outputs.files }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
